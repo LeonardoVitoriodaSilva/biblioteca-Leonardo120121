@@ -2,18 +2,37 @@ package dominio;
 
 import java.time.LocalDate;
 
+// Classe que representa um empréstimo de livro na biblioteca
 public class Emprestimo {
-    private LocalDate data_emprestimo;
-    private LocalDate data_devolucao;
+    private LocalDate dataEmprestimo;
+    private LocalDate dataDevolucao;
 
-    public LocalDate get_data_emprestimo(){
-        return data_emprestimo;
+    // Construtor da classe Emprestimo
+    public Emprestimo(LocalDate dataEmprestimo) {
+        this.dataEmprestimo = dataEmprestimo;
     }
-    public LocalDate get_data_devolucao(){
-        return data_devolucao;
+
+    // Método para obter a data de empréstimo
+    public LocalDate getDataEmprestimo() {
+        return dataEmprestimo;
     }
-    public void set_data_devolucao(LocalDate data_devolucao){
-        this.data_devolucao = data_devolucao;
+
+    // Método para obter a data de devolução
+    public LocalDate getDataDevolucao() {
+        return dataDevolucao;
+    }
+
+    // Método para definir a data de devolução
+    public void setDataDevolucao(LocalDate dataDevolucao) {
+        this.dataDevolucao = dataDevolucao;
+    }
+
+    // Método para representar o empréstimo como uma string
+    @Override
+    public String toString() {
+        return "Emprestimo{" +
+                "dataEmprestimo=" + dataEmprestimo +
+                ", dataDevolucao=" + dataDevolucao +
+                '}';
     }
 }
-

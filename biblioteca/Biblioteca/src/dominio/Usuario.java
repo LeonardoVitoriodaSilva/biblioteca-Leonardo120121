@@ -1,17 +1,40 @@
 package dominio;
 
+// Classe que representa um usuário da biblioteca
 public class Usuario {
     private String nome;
     private String cpf;
     private String email;
 
-    public String get_nome(){
+    // Construtor da classe Usuario
+    public Usuario(String nome, String cpf, String email) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.email = email;
+    }
+
+    // Método para obter o nome do usuário
+    public String getNome() {
         return nome;
     }
-    public String get_cpf(){
+
+    // Método para obter o CPF do usuário
+    public String getCpf() {
         return cpf;
     }
-    public String get_email(){
+
+    // Método para obter o email do usuário
+    public String getEmail() {
         return email;
+    }
+
+    // Método para representar o usuário como uma string
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "nome='" + nome + '\'' +
+                ", cpf='" + cpf + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

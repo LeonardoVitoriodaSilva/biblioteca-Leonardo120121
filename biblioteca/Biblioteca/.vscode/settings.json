@@ -1,6 +1,11 @@
 {
+    // Caminhos das pastas de origem do projeto Java
     "java.project.sourcePaths": ["src"],
+
+    // Caminho de saída para os arquivos compilados
     "java.project.outputPath": "bin",
+
+    // Bibliotecas referenciadas pelo projeto
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
     ]
