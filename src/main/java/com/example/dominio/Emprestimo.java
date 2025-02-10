@@ -1,4 +1,4 @@
-package src.main.java.com.example.dominio;
+package com.example.dominio;
 
 import java.time.LocalDate;
 
@@ -6,10 +6,12 @@ import java.time.LocalDate;
 public class Emprestimo {
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;
+    private Usuario usuario;
 
     // Construtor da classe Emprestimo
-    public Emprestimo(LocalDate dataEmprestimo) {
+    public Emprestimo(LocalDate dataEmprestimo, Usuario usuario) {
         this.dataEmprestimo = dataEmprestimo;
+        this.usuario = usuario;
     }
 
     // Método para obter a data de empréstimo
@@ -27,12 +29,23 @@ public class Emprestimo {
         this.dataDevolucao = dataDevolucao;
     }
 
+    // Método para obter o usuário
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    // Método para definir o usuário
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
     // Método para representar o empréstimo como uma string
     @Override
     public String toString() {
         return "Emprestimo{" +
                 "dataEmprestimo=" + dataEmprestimo +
                 ", dataDevolucao=" + dataDevolucao +
+                ", usuario=" + usuario +
                 '}';
     }
 }

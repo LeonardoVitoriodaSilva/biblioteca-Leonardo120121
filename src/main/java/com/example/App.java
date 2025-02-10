@@ -1,46 +1,65 @@
-package src.main.java.com.example;
+package com.example;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.time.LocalDate;
 
-import src.main.java.com.example.dominio.Livro;
+import com.example.dominio.Emprestimo;
+import com.example.dominio.Livro;
+import com.example.dominio.Usuario;
 
-@SuppressWarnings("unused")
 public class App {
     public static void main(String[] args) {
         // Criação de uma lista de livros
         List<Livro> livros = new ArrayList<>();
         inicializarLivros(livros);
 
+        // Criação de uma lista de usuários
+        List<Usuario> usuarios = new ArrayList<>();
+
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 // Exibição do menu de opções
-                System.out.println("\n1 - Cadastrar livro\n2 - Listar todos os livros\n3 - Pegar livro emprestado\n4 - Devolver livro\n5 - Listar livros emprestados e disponíveis\n6 - Listar histórico de empréstimos do usuário\n7 - Sair");
+                System.out.println("\n1 - Cadastrar usuário\n2 - Listar todos os livros\n3 - Cadastrar livro\n4 - Pegar livro emprestado\n5 - Devolver livro\n6 - Listar livros emprestados e disponíveis\n7 - Listar histórico de empréstimos do usuário\n8 - Listar usuários\n9 - Sair");
                 System.out.print("\nDigite uma opção:");
+
+                // Verificação para garantir que o valor inserido seja um número inteiro
+                if (!scanner.hasNextInt()) {
+                    System.out.println("Opção inválida! Por favor, digite um número inteiro.");
+                    scanner.next(); // Consumir a entrada inválida
+                    continue;
+                }
+
                 int escolha = scanner.nextInt();
 
                 // Processamento da escolha do usuário
                 switch (escolha) {
                     case 1:
-                        cadastrarLivro(scanner, livros);
+                        cadastrarUsuario(scanner, usuarios);
                         break;
                     case 2:
                         listarLivros(livros);
                         break;
                     case 3:
-                        pegarLivroEmprestado(scanner, livros);
+                        cadastrarLivro(scanner, livros);
                         break;
                     case 4:
-                        devolverLivro(scanner, livros);
+                        pegarLivroEmprestado(scanner, livros, usuarios);
                         break;
                     case 5:
-                        listarLivrosEmprestadosDisponiveis(livros);
+                        devolverLivro(scanner, livros);
                         break;
                     case 6:
-                        listarHistoricoEmprestimos();
+                        listarLivrosEmprestadosDisponiveis(livros);
                         break;
                     case 7:
+                        listarHistoricoEmprestimos(scanner, usuarios);
+                        break;
+                    case 8:
+                        listarUsuarios(usuarios);
+                        break;
+                    case 9:
                         System.out.println("Saindo...");
                         return;
                     default:
@@ -91,14 +110,25 @@ public class App {
     }
 
     // Marca um livro como emprestado
-    private static void pegarLivroEmprestado(Scanner scanner, List<Livro> livros) {
+    private static void pegarLivroEmprestado(Scanner scanner, List<Livro> livros, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o título do livro a ser emprestado: ");
         String titulo = scanner.nextLine();
 
+        System.out.print("Digite o CPF do usuário: ");
+        String cpf = scanner.nextLine();
+
+        Usuario usuario = buscarUsuarioPorCpf(usuarios, cpf);
+        if (usuario == null) {
+            System.out.println("Usuário não encontrado.");
+            return;
+        }
+
         for (Livro livro : livros) {
             if (livro.getTitulo().equalsIgnoreCase(titulo) && !livro.isEmprestado()) {
                 livro.setEmprestado(true);
+                Emprestimo emprestimo = new Emprestimo(LocalDate.now(), usuario);
+                usuario.adicionarEmprestimo(emprestimo);
                 System.out.println("Livro emprestado com sucesso!");
                 return;
             }
@@ -139,8 +169,61 @@ public class App {
         }
     }
 
-    // Lista o histórico de empréstimos (não implementado)
-    private static void listarHistoricoEmprestimos() {
-        System.out.println("Funcionalidade não implementada.");
+    // Lista o histórico de empréstimos do usuário
+    private static void listarHistoricoEmprestimos(Scanner scanner, List<Usuario> usuarios) {
+        scanner.nextLine(); // Consumir a nova linha
+        System.out.print("Digite o CPF do usuário: ");
+        String cpf = scanner.nextLine();
+
+        Usuario usuario = buscarUsuarioPorCpf(usuarios, cpf);
+        if (usuario == null) {
+            System.out.println("Usuário não encontrado.");
+            return;
+        }
+
+        List<Emprestimo> historico = usuario.getHistoricoEmprestimos();
+        if (historico.isEmpty()) {
+            System.out.println("Nenhum empréstimo encontrado para este usuário.");
+        } else {
+            System.out.println("\nHistórico de Empréstimos:");
+            for (Emprestimo emprestimo : historico) {
+                System.out.println(emprestimo);
+            }
+        }
+    }
+
+    // Busca um usuário pelo CPF
+    private static Usuario buscarUsuarioPorCpf(List<Usuario> usuarios, String cpf) {
+        for (Usuario usuario : usuarios) {
+            if (usuario.getCpf().equals(cpf)) {
+                return usuario;
+            }
+        }
+        return null;
+    }
+
+    // Cadastra um novo usuário na lista
+    private static void cadastrarUsuario(Scanner scanner, List<Usuario> usuarios) {
+        scanner.nextLine(); // Consumir a nova linha
+        System.out.print("Digite o nome do usuário: ");
+        String nome = scanner.nextLine();
+
+        System.out.print("Digite o email do usuário: ");
+        String email = scanner.nextLine();
+
+        System.out.print("Digite o CPF do usuário: ");
+        String cpf = scanner.nextLine();
+
+        Usuario novoUsuario = new Usuario(nome, email, cpf);
+        usuarios.add(novoUsuario);
+        System.out.println("Usuário cadastrado com sucesso!");
+    }
+
+    // Lista todos os usuários cadastrados
+    private static void listarUsuarios(List<Usuario> usuarios) {
+        System.out.println("\nLista de Usuários:");
+        for (Usuario usuario : usuarios) {
+            System.out.println(usuario);
+        }
     }
 }
