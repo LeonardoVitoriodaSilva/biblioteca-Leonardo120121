@@ -1,4 +1,4 @@
-package dominio;
+package src.main.java.com.example.dominio;
 
 // Classe que representa um usuário da biblioteca
 public class Usuario {

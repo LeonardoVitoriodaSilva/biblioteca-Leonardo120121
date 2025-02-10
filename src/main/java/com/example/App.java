@@ -1,10 +1,10 @@
-package dominio;
+package src.main.java.com.example;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import dominio.Livro;
+import src.main.java.com.example.dominio.Livro;
 
 @SuppressWarnings("unused")
 public class App {
