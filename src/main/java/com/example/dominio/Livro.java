@@ -2,11 +2,12 @@ package com.example.dominio;
 
 // Classe que representa um livro na biblioteca
 public class Livro {
+    private int id;
     private String autor;
     private String titulo;
     private String editora;
     private int ano;
-    private boolean emprestado = false;
+    private boolean emprestado;
 
     // Construtor da classe Livro
     public Livro(String autor, String titulo, String editora, int ano) {
@@ -14,6 +15,17 @@ public class Livro {
         this.titulo = titulo;
         this.editora = editora;
         this.ano = ano;
+        this.emprestado = false;
+    }
+
+    // Método para obter o ID do livro
+    public int getId() {
+        return id;
+    }
+
+    // Método para definir o ID do livro
+    public void setId(int id) {
+        this.id = id;
     }
 
     // Método para obter o autor do livro
@@ -69,12 +81,6 @@ public class Livro {
     // Método para representar o livro como uma string
     @Override
     public String toString() {
-        return "Livro{" +
-                "autor='" + autor + '\'' +
-                ", titulo='" + titulo + '\'' +
-                ", editora='" + editora + '\'' +
-                ", ano=" + ano +
-                ", emprestado=" + emprestado +
-                '}';
+        return "Livro [titulo=" + titulo + ", autor=" + autor + ", editora=" + editora + ", ano=" + ano + "]";
     }
 }

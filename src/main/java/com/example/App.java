@@ -3,8 +3,12 @@ package com.example;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.sql.SQLException;
 import java.time.LocalDate;
 
+import com.example.dao.ConexaoDao;
+import com.example.dao.LivroDao;
+import com.example.dao.UsuarioDao;
 import com.example.dominio.Emprestimo;
 import com.example.dominio.Livro;
 import com.example.dominio.Usuario;
@@ -39,7 +43,7 @@ public class App {
                         cadastrarUsuario(scanner, usuarios);
                         break;
                     case 2:
-                        listarLivros(livros);
+                        listarLivros();
                         break;
                     case 3:
                         cadastrarLivro(scanner, livros);
@@ -97,15 +101,25 @@ public class App {
         System.out.print("Digite o ano do livro: ");
         novoLivro.setAno(scanner.nextInt());
 
+        try (var conexao = ConexaoDao.conectar()) {
+            new LivroDao(conexao).adicionarLivro(novoLivro);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         livros.add(novoLivro);
         System.out.println("Livro cadastrado com sucesso!");
     }
 
     // Lista todos os livros cadastrados
-    private static void listarLivros(List<Livro> livros) {
+    private static void listarLivros() {
         System.out.println("\nLista de Livros:");
-        for (Livro livro : livros) {
-            System.out.println(livro);
+        try (var conexao = ConexaoDao.conectar()) {
+            List<Livro> listaDeLivros = new LivroDao(conexao).listarLivros();
+            for (Livro livro : listaDeLivros) {
+                System.out.println(livro.getTitulo() + " - " + livro.getAutor());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -118,41 +132,57 @@ public class App {
         System.out.print("Digite o CPF do usuário: ");
         String cpf = scanner.nextLine();
 
-        Usuario usuario = buscarUsuarioPorCpf(usuarios, cpf);
-        if (usuario == null) {
-            System.out.println("Usuário não encontrado.");
-            return;
-        }
-
-        for (Livro livro : livros) {
-            if (livro.getTitulo().equalsIgnoreCase(titulo) && !livro.isEmprestado()) {
-                livro.setEmprestado(true);
-                Emprestimo emprestimo = new Emprestimo(LocalDate.now(), usuario);
-                usuario.adicionarEmprestimo(emprestimo);
-                System.out.println("Livro emprestado com sucesso!");
+        try {
+            Usuario usuario = new UsuarioDao().buscarUsuarioPorCpf(cpf);
+            if (usuario == null) {
+                System.out.println("Usuário não encontrado.");
                 return;
             }
+
+            try (var conexao = ConexaoDao.conectar()) {
+                LivroDao livroDao = new LivroDao(conexao);
+                for (Livro livro : livros) {
+                    if (livro.getTitulo().equalsIgnoreCase(titulo) && !livro.isEmprestado()) {
+                        livro.setEmprestado(true);
+                        livroDao.atualizarLivro(livro);
+                        Emprestimo emprestimo = new Emprestimo(usuario.getId(), livro.getId(), LocalDate.now(), null);
+                        usuario.adicionarEmprestimo(emprestimo);
+                        System.out.println("Livro emprestado com sucesso!");
+                        return;
+                    }
+                }
+                System.out.println("Livro não encontrado ou já emprestado.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        System.out.println("Livro não encontrado ou já emprestado.");
     }
 
     // Marca um livro como devolvido
+    
     private static void devolverLivro(Scanner scanner, List<Livro> livros) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o título do livro a ser devolvido: ");
         String titulo = scanner.nextLine();
 
-        for (Livro livro : livros) {
-            if (livro.getTitulo().equalsIgnoreCase(titulo) && livro.isEmprestado()) {
-                livro.setEmprestado(false);
-                System.out.println("Livro devolvido com sucesso!");
-                return;
+        try (var conexao = ConexaoDao.conectar()) {
+            LivroDao livroDao = new LivroDao(conexao);
+            for (Livro livro : livros) {
+                if (livro.getTitulo().equalsIgnoreCase(titulo) && livro.isEmprestado()) {
+                    livro.setEmprestado(false);
+                    livroDao.atualizarLivro(livro);
+                    System.out.println("Livro devolvido com sucesso!");
+                    return;
+                }
             }
+            System.out.println("Livro não encontrado ou não está emprestado.");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        System.out.println("Livro não encontrado ou não está emprestado.");
     }
 
     // Lista os livros emprestados e disponíveis
+    // Não conectado
     private static void listarLivrosEmprestadosDisponiveis(List<Livro> livros) {
         System.out.println("\nLivros Emprestados:");
         for (Livro livro : livros) {
@@ -170,6 +200,7 @@ public class App {
     }
 
     // Lista o histórico de empréstimos do usuário
+    // Não conectado 
     private static void listarHistoricoEmprestimos(Scanner scanner, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o CPF do usuário: ");
@@ -180,7 +211,7 @@ public class App {
             System.out.println("Usuário não encontrado.");
             return;
         }
-
+       
         List<Emprestimo> historico = usuario.getHistoricoEmprestimos();
         if (historico.isEmpty()) {
             System.out.println("Nenhum empréstimo encontrado para este usuário.");
@@ -203,6 +234,7 @@ public class App {
     }
 
     // Cadastra um novo usuário na lista
+    //Conectando
     private static void cadastrarUsuario(Scanner scanner, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o nome do usuário: ");
@@ -215,15 +247,28 @@ public class App {
         String cpf = scanner.nextLine();
 
         Usuario novoUsuario = new Usuario(nome, email, cpf);
+        try {
+            new UsuarioDao().adicionarUsuario(novoUsuario);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         usuarios.add(novoUsuario);
         System.out.println("Usuário cadastrado com sucesso!");
     }
 
     // Lista todos os usuários cadastrados
+    //Conectado
     private static void listarUsuarios(List<Usuario> usuarios) {
         System.out.println("\nLista de Usuários:");
-        for (Usuario usuario : usuarios) {
-            System.out.println(usuario);
+        try {
+            List<Usuario> listaDeUsuarios = new UsuarioDao().listarUsuarios();
+            for (Usuario usuario : listaDeUsuarios) {
+                System.out.println(usuario.getNome() + " - " + usuario.getEmail());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
+

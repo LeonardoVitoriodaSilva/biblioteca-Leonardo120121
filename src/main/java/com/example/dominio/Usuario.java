@@ -5,6 +5,7 @@ import java.util.List;
 
 // Classe que representa um usuário da biblioteca
 public class Usuario {
+    private int id;
     private String nome;
     private String cpf;
     private String email;
@@ -18,7 +19,19 @@ public class Usuario {
         this.historicoEmprestimos = new ArrayList<>();
     }
 
+    public Usuario(int id) {
+        this.id = id;
+    }
+
     // Getters e setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -66,4 +79,5 @@ public class Usuario {
     public String toString() {
         return "Usuario [nome=" + nome + ", email=" + email + ", cpf=" + cpf + "]";
     }
+
 }

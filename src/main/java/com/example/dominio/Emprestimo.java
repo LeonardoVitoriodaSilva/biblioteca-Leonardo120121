@@ -2,50 +2,58 @@ package com.example.dominio;
 
 import java.time.LocalDate;
 
-// Classe que representa um empréstimo de livro na biblioteca
 public class Emprestimo {
+    private int usuarioId;
+    private int livroId;
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;
-    private Usuario usuario;
 
-    // Construtor da classe Emprestimo
-    public Emprestimo(LocalDate dataEmprestimo, Usuario usuario) {
+    public Emprestimo(int usuarioId, int livroId, LocalDate dataEmprestimo, LocalDate dataDevolucao) {
+        this.usuarioId = usuarioId;
+        this.livroId = livroId;
         this.dataEmprestimo = dataEmprestimo;
-        this.usuario = usuario;
+        this.dataDevolucao = dataDevolucao;
     }
 
-    // Método para obter a data de empréstimo
+    public int getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(int usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
+    public int getLivroId() {
+        return livroId;
+    }
+
+    public void setLivroId(int livroId) {
+        this.livroId = livroId;
+    }
+
     public LocalDate getDataEmprestimo() {
         return dataEmprestimo;
     }
 
-    // Método para obter a data de devolução
+    public void setDataEmprestimo(LocalDate dataEmprestimo) {
+        this.dataEmprestimo = dataEmprestimo;
+    }
+
     public LocalDate getDataDevolucao() {
         return dataDevolucao;
     }
 
-    // Método para definir a data de devolução
     public void setDataDevolucao(LocalDate dataDevolucao) {
         this.dataDevolucao = dataDevolucao;
     }
 
-    // Método para obter o usuário
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    // Método para definir o usuário
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    // Método para representar o empréstimo como uma string
     @Override
     public String toString() {
         return "Emprestimo{" +
-                "dataEmprestimo=" + dataEmprestimo +
+                "usuarioId=" + usuarioId +
+                ", livroId=" + livroId +
+                ", dataEmprestimo=" + dataEmprestimo +
                 ", dataDevolucao=" + dataDevolucao +
-                ", usuario=" + usuario +
                 '}';
     }
 }

@@ -3,27 +3,27 @@ package com.example.dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class ConexaoDao {
 
-    public void conectar() {
-        try (Connection conexao = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres",
-                "leo150105")) {
+    public static Connection conectar() {
+        String url = "jdbc:postgresql://localhost:5432/postgres";
+        String user = "postgres";
+        String password = "leo150105";
+
+        try {
+            Connection conexao = DriverManager.getConnection(url, user, password);
             if (conexao != null) {
                 System.out.println("Conectado ao banco de dados");
-                Statement stm = conexao.createStatement();
-                consultaDados(stm);
+                return conexao;
             } else {
                 System.out.println("Falha ao conectar ao banco de dados");
             }
         } catch (SQLException e) {
-            System.out.println("Erro ao conectar ao banco de dados");
-            e.printStackTrace();
+            System.err.println("Erro ao conectar ao banco de dados: " + e.getMessage());
         }
-    }
-
-    private void consultaDados(Statement stm) {
-        // Implementação do método consultaDados
+        return null;
     }
 }
+
+
