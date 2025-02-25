@@ -211,7 +211,7 @@ public class App {
             System.out.println("Usuário não encontrado.");
             return;
         }
-       
+
         List<Emprestimo> historico = usuario.getHistoricoEmprestimos();
         if (historico.isEmpty()) {
             System.out.println("Nenhum empréstimo encontrado para este usuário.");
@@ -234,7 +234,6 @@ public class App {
     }
 
     // Cadastra um novo usuário na lista
-    //Conectando
     private static void cadastrarUsuario(Scanner scanner, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o nome do usuário: ");
