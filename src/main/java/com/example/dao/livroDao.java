@@ -50,6 +50,50 @@ public class LivroDao {
         return livros;
     }
 
+    public List<Livro> listarLivrosDisponiveis() throws SQLException {
+        List<Livro> livros = new ArrayList<>();
+        String sql = "SELECT * FROM livros WHERE emprestado = false";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Livro livro = new Livro(
+                    rs.getString("autor"),
+                    rs.getString("titulo"),
+                    rs.getString("editora"),
+                    rs.getInt("ano")
+                );
+                livro.setId(rs.getInt("id"));
+                livro.setEmprestado(rs.getBoolean("emprestado"));
+                livros.add(livro);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        }
+        return livros;
+    }
+
+    public List<Livro> listarLivrosEmprestados() throws SQLException {
+        List<Livro> livros = new ArrayList<>();
+        String sql = "SELECT * FROM livros WHERE emprestado = true";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Livro livro = new Livro(
+                    rs.getString("autor"),
+                    rs.getString("titulo"),
+                    rs.getString("editora"),
+                    rs.getInt("ano")
+                );
+                livro.setId(rs.getInt("id"));
+                livro.setEmprestado(rs.getBoolean("emprestado"));
+                livros.add(livro);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        }
+        return livros;
+    }
+
     public void atualizarLivro(Livro livro) throws SQLException {
         String sql = "UPDATE livros SET titulo = ?, autor = ?, editora = ?, ano = ?, emprestado = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

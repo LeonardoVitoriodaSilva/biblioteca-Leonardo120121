@@ -5,23 +5,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class emprestimoDao {
+public class EmprestimoDao {
     private Connection connection;
 
-    public emprestimoDao() {
-        this.connection = ConexaoDao.conectar();
+    public EmprestimoDao(Connection connection) {
+        this.connection = connection;
     }
 
     public void salvar(Emprestimo emprestimo) throws SQLException {
-        String sql = "INSERT INTO emprestimo (usuario_id, livro_id, data_emprestimo, data_devolucao) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO emprestimo (usuario_id, livro_id, data_emprestimo) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, emprestimo.getUsuarioId());
             stmt.setInt(2, emprestimo.getLivroId());
             stmt.setDate(3, Date.valueOf(emprestimo.getDataEmprestimo()));
-            stmt.setDate(4, Date.valueOf(emprestimo.getDataDevolucao()));
+            // stmt.setDate(4, Date.valueOf(emprestimo.getDataDevolucao()));
             stmt.executeUpdate();
 
-            stmt.executeUpdate();
             System.out.println("Empréstimo cadastrado com sucesso!");
 
         } catch (SQLException e) {

@@ -3,10 +3,12 @@ package com.example;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
 import com.example.dao.ConexaoDao;
+import com.example.dao.EmprestimoDao;
 import com.example.dao.LivroDao;
 import com.example.dao.UsuarioDao;
 import com.example.dominio.Emprestimo;
@@ -16,8 +18,6 @@ import com.example.dominio.Usuario;
 public class App {
     public static void main(String[] args) {
         // Criação de uma lista de livros
-        List<Livro> livros = new ArrayList<>();
-        inicializarLivros(livros);
 
         // Criação de uma lista de usuários
         List<Usuario> usuarios = new ArrayList<>();
@@ -46,16 +46,16 @@ public class App {
                         listarLivros();
                         break;
                     case 3:
-                        cadastrarLivro(scanner, livros);
+                        cadastrarLivro(scanner);
                         break;
                     case 4:
-                        pegarLivroEmprestado(scanner, livros, usuarios);
+                        pegarLivroEmprestado(scanner, usuarios);
                         break;
                     case 5:
-                        devolverLivro(scanner, livros);
+                        devolverLivro(scanner);
                         break;
                     case 6:
-                        listarLivrosEmprestadosDisponiveis(livros);
+                        listarLivrosEmprestadosDisponiveis();
                         break;
                     case 7:
                         listarHistoricoEmprestimos(scanner, usuarios);
@@ -73,19 +73,8 @@ public class App {
         }
     }
 
-    // Inicializa a lista de livros com alguns exemplos
-    private static void inicializarLivros(List<Livro> livros) {
-        Livro livro = new Livro("J.K Rowling", "Harry Potter e a Pedra Filosofal", "Bloomsbury", 1997);
-        Livro livro1 = new Livro("J.K Rowling", "Harry Potter e a Câmara Secreta", "Bloomsbury", 1998);
-        Livro livro2 = new Livro("J.K Rowling", "Harry Potter e o Prisioneiro de Azkaban", "Bloomsbury", 1999);
-
-        livros.add(livro);
-        livros.add(livro1);
-        livros.add(livro2);
-    }
-
     // Cadastra um novo livro na lista
-    private static void cadastrarLivro(Scanner scanner, List<Livro> livros) {
+    private static void cadastrarLivro(Scanner scanner) {
         scanner.nextLine(); // Consumir a nova linha
         Livro novoLivro = new Livro(null, null, null, 0);
 
@@ -106,7 +95,6 @@ public class App {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        livros.add(novoLivro);
         System.out.println("Livro cadastrado com sucesso!");
     }
 
@@ -124,13 +112,14 @@ public class App {
     }
 
     // Marca um livro como emprestado
-    private static void pegarLivroEmprestado(Scanner scanner, List<Livro> livros, List<Usuario> usuarios) {
+    private static void pegarLivroEmprestado(Scanner scanner, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o título do livro a ser emprestado: ");
         String titulo = scanner.nextLine();
 
         System.out.print("Digite o CPF do usuário: ");
         String cpf = scanner.nextLine();
+        Connection conexao = null;
 
         try {
             Usuario usuario = new UsuarioDao().buscarUsuarioPorCpf(cpf);
@@ -139,34 +128,46 @@ public class App {
                 return;
             }
 
-            try (var conexao = ConexaoDao.conectar()) {
+
+            conexao = ConexaoDao.conectar();
                 LivroDao livroDao = new LivroDao(conexao);
+                List<Livro> livros = livroDao.listarLivros();
+                System.out.println(livros);
                 for (Livro livro : livros) {
                     if (livro.getTitulo().equalsIgnoreCase(titulo) && !livro.isEmprestado()) {
+                        conexao.setAutoCommit(false);
                         livro.setEmprestado(true);
                         livroDao.atualizarLivro(livro);
                         Emprestimo emprestimo = new Emprestimo(usuario.getId(), livro.getId(), LocalDate.now(), null);
                         usuario.adicionarEmprestimo(emprestimo);
+                        new EmprestimoDao(conexao).salvar(emprestimo);
                         System.out.println("Livro emprestado com sucesso!");
+                        conexao.commit();
                         return;
                     }
                 }
                 System.out.println("Livro não encontrado ou já emprestado.");
+            
+        } catch (Exception e) {
+            try {
+                conexao.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
             }
-        } catch (SQLException e) {
             e.printStackTrace();
-        }
+        } 
     }
 
     // Marca um livro como devolvido
     
-    private static void devolverLivro(Scanner scanner, List<Livro> livros) {
+    private static void devolverLivro(Scanner scanner) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o título do livro a ser devolvido: ");
         String titulo = scanner.nextLine();
 
         try (var conexao = ConexaoDao.conectar()) {
             LivroDao livroDao = new LivroDao(conexao);
+            List<Livro> livros = livroDao.listarLivros();
             for (Livro livro : livros) {
                 if (livro.getTitulo().equalsIgnoreCase(titulo) && livro.isEmprestado()) {
                     livro.setEmprestado(false);
@@ -183,20 +184,23 @@ public class App {
 
     // Lista os livros emprestados e disponíveis
     // Não conectado
-    private static void listarLivrosEmprestadosDisponiveis(List<Livro> livros) {
+    private static void listarLivrosEmprestadosDisponiveis() {
+        try (var conexao = ConexaoDao.conectar()) {
+        LivroDao livroDao = new LivroDao(conexao);
+        List<Livro> livrosEmprestados = livroDao.listarLivrosEmprestados(); // fazer método para consultar livros disponiveis direto no BD (usar sql query)
         System.out.println("\nLivros Emprestados:");
-        for (Livro livro : livros) {
-            if (livro.isEmprestado()) {
+        for (Livro livro : livrosEmprestados) {
                 System.out.println(livro);
-            }
         }
 
+        List<Livro> livrosDisponiveis = livroDao.listarLivrosDisponiveis();
         System.out.println("\nLivros Disponíveis:");
-        for (Livro livro : livros) {
-            if (!livro.isEmprestado()) {
+        for (Livro livro : livrosDisponiveis) {
                 System.out.println(livro);
-            }
         }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
     }
 
     // Lista o histórico de empréstimos do usuário
