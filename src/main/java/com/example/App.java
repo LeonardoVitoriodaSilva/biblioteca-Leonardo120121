@@ -200,7 +200,6 @@ public class App {
     }
 
     // Lista o histórico de empréstimos do usuário
-    // Não conectado 
     private static void listarHistoricoEmprestimos(Scanner scanner, List<Usuario> usuarios) {
         scanner.nextLine(); // Consumir a nova linha
         System.out.print("Digite o CPF do usuário: ");
